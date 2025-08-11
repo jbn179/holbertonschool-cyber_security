@@ -1,2 +1,2 @@
 #!/bin/bash
-iptables -L -n -v  # List all rules with verbose output
+sudo iptables -L -n -v  # List all rules with verbose output
