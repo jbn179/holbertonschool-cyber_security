@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo iptables -L -n -v  # List all rules with verbose output
+sudo iptables -t security -L -n -v  # List all rules in security table with verbose output
