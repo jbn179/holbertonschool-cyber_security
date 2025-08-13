@@ -1,2 +1,2 @@
 #!/bin/bash
-dig +noall +answer $1 ANY
+dig +noall +answer $1 any
