@@ -1,2 +1,2 @@
 #!/bin/bash
-whois $1 | awk -F': ' '/^(Registrant|Admin|Tech)/ {gsub(/^[ \t]+|[ \t]+$/, "", $1); gsub(/^[ \t]+|[ \t]+$/, "", $2); print $1 "," $2}' > "$1.csv"
+whois $1 | awk -F': ' '/egistrant|dmin|ech/ {printf "%s,%s\n", $1, $2}' > "$1.csv"
