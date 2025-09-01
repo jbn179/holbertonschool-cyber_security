@@ -2,31 +2,39 @@
 
 ## 📋 Project Overview
 
-This project focuses on **network protocol analysis** using Wireshark for defensive security monitoring and traffic analysis. Students learn to capture, filter, and analyze network packets to understand communication patterns and detect potential security threats.
+This project focuses on **network scanning detection** using Wireshark to identify various types of Nmap scanning techniques. Students learn to create precise display filters that detect specific scanning patterns for defensive security monitoring and intrusion detection.
 
 **Project**: `0x05_wireshark_basics`  
 **Environment**: Linux with Wireshark and network analysis tools  
 **Repository**: `holbertonschool-cyber_security`
 
+**Tasks are designed to help you understand different network scanning techniques and develop effective detection capabilities using Wireshark display filters.**
+
 ## 🎯 Learning Objectives
 
 After completing this project, you will be able to:
 
-- 🔍 Capture and analyze network traffic using Wireshark
-- 📊 Apply display filters to isolate specific protocols and communications
-- 🌐 Understand network protocol structures (ARP, ICMP, TCP, UDP)
-- 🔎 Detect network scanning activities and reconnaissance attempts
-- 🛡️ Monitor network security events through packet analysis
-- 📝 Document network security findings and create detection rules
+- 🔍 Create precise Wireshark display filters for scan detection
+- 📊 Identify different Nmap scanning techniques (TCP, UDP, ICMP, ARP)
+- 🌐 Understand protocol-specific scanning signatures and patterns
+- 🔎 Detect stealth scanning attempts through packet analysis
+- 🛡️ Develop defensive monitoring capabilities for network security
+- 📝 Document scanning patterns and create detection rules
 
 ## 📁 Project Structure
 
-| Task | File | Description | Key Protocol |
-|------|------|-------------|--------------|
-| **0** | `0-arp_scan.pcap` | ARP scanning traffic capture | `ARP` |
-| **1** | `1-nmap_scan.pcap` | Nmap ping scan traffic analysis | `ICMP` |
-| **2** | `2-tcp_scan.pcap` | TCP port scanning detection | `TCP` |
-| **Documentation** | `ICMP_Types_Documentation.md` | Complete ICMP types and codes reference | `ICMP` |
+| Task | File | Description | Scan Type | Tool |
+|------|------|-------------|-----------|------|
+| **0** | `0-ip_scan.txt` | IP protocol scanning detection | Protocol scan | `nmap -sO` |
+| **1** | `1-tcp_syn.txt` | TCP SYN scanning detection | Stealth scan | `nmap -sS` |
+| **2** | `2-tcp_connect_scan.txt` | TCP Connect scanning detection | Full connect | `nmap -sT` |
+| **3** | `3-tcp_fin.txt` | TCP FIN scanning detection | Stealth scan | `nmap -sF` |
+| **4** | `4-tcp_ping_sweep.txt` | TCP ping sweep detection | Host discovery | `nmap -sn -PS/-PA` |
+| **5** | `5-udp_port_scan.txt` | UDP port scanning detection | UDP scan | `nmap -sU` |
+| **6** | `6-udp_ping_sweep.txt` | UDP ping sweep detection | Host discovery | `nmap -sn -PU` |
+| **7** | `7-icmp_ping_sweep.txt` | ICMP ping sweep detection | Host discovery | `nmap -sn -PE` |
+| **8** | `8-arp_scanning.txt` | ARP scanning detection | Layer 2 discovery | `arp-scan` |
+| **Docs** | `ICMP_Types_Documentation.md` | Complete ICMP reference | Protocol docs | Reference |
 
 ## 🔧 Network Analysis Tasks
 
