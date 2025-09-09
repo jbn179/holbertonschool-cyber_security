@@ -2,24 +2,24 @@
 
 ## 📋 Project Overview
 
-This project focuses on **network scanning detection** using Wireshark to identify various types of Nmap scanning techniques. Students learn to create precise display filters that detect specific scanning patterns for defensive security monitoring and intrusion detection.
+This project focuses on **network scanning detection** using Wireshark to identify and analyze various Nmap scanning techniques through packet-level analysis. Students learn to create precise display filters that detect specific scanning patterns, understand protocol behaviors, and develop advanced defensive monitoring capabilities for network security and intrusion detection.
 
 **Project**: `0x05_wireshark_basics`  
-**Environment**: Linux with Wireshark and network analysis tools  
+**Environment**: Linux with Wireshark, Nmap, and network analysis tools  
 **Repository**: `holbertonschool-cyber_security`
-
-**Tasks are designed to help you understand different network scanning techniques and develop effective detection capabilities using Wireshark display filters.**
 
 ## 🎯 Learning Objectives
 
 After completing this project, you will be able to:
 
-- 🔍 Create precise Wireshark display filters for scan detection
-- 📊 Identify different Nmap scanning techniques (TCP, UDP, ICMP, ARP)
-- 🌐 Understand protocol-specific scanning signatures and patterns
-- 🔎 Detect stealth scanning attempts through packet analysis
-- 🛡️ Develop defensive monitoring capabilities for network security
-- 📝 Document scanning patterns and create detection rules
+- 🔍 Master Wireshark display filter syntax and advanced packet filtering techniques
+- 📊 Identify and differentiate between various Nmap scanning methodologies (TCP, UDP, ICMP, ARP)
+- 🌐 Analyze protocol-specific scanning signatures and behavioral patterns at the packet level
+- 🔎 Detect sophisticated stealth scanning techniques through traffic analysis
+- 🛡️ Develop comprehensive defensive monitoring capabilities for network security operations
+- 📝 Create detection rules and implement security monitoring workflows
+- 🧠 Understand the offensive perspective to strengthen defensive capabilities
+- 📋 Perform forensic network analysis for incident response scenarios
 
 ## 📁 Project Structure
 
@@ -36,131 +36,338 @@ After completing this project, you will be able to:
 | **8** | `8-arp_scanning.txt` | ARP scanning detection | Layer 2 discovery | `arp-scan` |
 | **Docs** | `ICMP_Types_Documentation.md` | Complete ICMP reference | Protocol docs | Reference |
 
-## 🔧 Scanning Detection Tasks
+## 🔧 Network Scanning Detection Tasks
 
 ### 0️⃣ IP Protocol Scan Detection (`0-ip_scan.txt`)
-**Objective**: Detect `nmap -sO` IP protocol scanning.
+```bash
+# Nmap Command: sudo nmap -sO <target>
+```
 
 **Wireshark Filter**:
 ```
 icmp
 ```
 
-**Scan Type**: Protocol discovery scan  
-**Detection Method**: ICMP traffic generated during protocol testing  
-**Security Context**: Identifies protocol enumeration attempts
+**Technical Concept**:
+IP protocol scanning (`-sO`) tests which IP protocols are supported by the target (TCP=6, UDP=17, ICMP=1, etc.). Nmap sends IP headers with different protocol numbers to identify active protocols.
+
+**Detection Method**:
+- ICMP filter to capture "Protocol Unreachable" responses (Type 3, Code 2)
+- Unsupported protocols generate ICMP error messages
+- Supported protocols: no ICMP response or direct protocol response
+
+**Security Interest**:
+- **Reconnaissance**: Enumeration of available network services
+- **System fingerprinting**: Identification of the OS TCP/IP stack
+- **Attack preparation**: Protocol selection for targeted attacks
+
+**Defensive Usage Example**:
+```bash
+# Continuous monitoring of protocol scans
+tshark -i eth0 -f "icmp and icmp[0] == 3 and icmp[1] == 2"
+```
 
 ---
 
 ### 1️⃣ TCP SYN Scan Detection (`1-tcp_syn.txt`)
-**Objective**: Detect `nmap -sS` stealth scanning.
+```bash
+# Nmap Command: sudo nmap -sS <target>
+```
 
 **Wireshark Filter**:
 ```
 tcp.syn == 1 and tcp.ack == 0 and tcp.window_size <= 1024
 ```
 
-**Scan Type**: Half-open stealth scan  
-**Detection Method**: SYN packets with characteristic window size ≤ 1024  
-**Security Context**: Most common stealth scanning technique
+**Technical Concept**:
+SYN scanning (half-open) is the most popular stealth scanning technique. Nmap sends SYN packets with a characteristic window size (1024 bytes) that differs from normal operating system connections.
+
+**Detection Method**:
+- **tcp.syn == 1**: Packets with SYN flag enabled (connection initiation)
+- **tcp.ack == 0**: No ACK flag (not a response)
+- **tcp.window_size <= 1024**: Nmap-specific signature (normal OS uses >1024)
+
+**Security Interest**:
+- **Stealth scanning**: Doesn't complete TCP connections (no application logs)
+- **Speed**: Faster than full connect scanning
+- **Port detection**: Identification of open services without establishing connections
+
+**Advanced Detection Signatures**:
+```bash
+# Detection by SYN volume (possible scan)
+tcp.flags.syn == 1 and tcp.flags.ack == 0
+```
+
+**Defensive Usage Example**:
+```bash
+# IDS/IPS rule to detect SYN scans
+alert tcp any any -> HOME_NET any (msg:"Possible SYN Scan"; flags:S,!A; threshold: type limit, count 100, seconds 60;)
+```
 
 ---
 
 ### 2️⃣ TCP Connect Scan Detection (`2-tcp_connect_scan.txt`)
-**Objective**: Detect `nmap -sT` full connection scanning.
+```bash
+# Nmap Command: sudo nmap -sT <target>
+```
 
 **Wireshark Filter**:
 ```
 tcp.syn == 1 and tcp.ack == 0 and tcp.window_size > 1024
 ```
 
-**Scan Type**: Full TCP connection scan  
-**Detection Method**: SYN packets with normal OS window size > 1024  
-**Security Context**: Slower but more reliable scanning method
+**Technical Concept**:
+Connect scanning uses the complete operating system connect() system call to establish full TCP connections. It uses the native OS window size (typically >1024 bytes).
+
+**Detection Method**:
+- **tcp.window_size > 1024**: Normal OS window size
+- Differentiation from SYN scan by window size
+- Complete TCP connections (SYN → SYN/ACK → ACK)
+
+**Security Interest**:
+- **Less stealthy**: Leaves traces in application logs
+- **More reliable**: Uses native TCP stack, fewer false positives
+- **Privilege bypass**: Doesn't require root privileges
+
+**Behavioral Differences**:
+```
+Nmap SYN (-sS)    : window_size = 1024 (fixed value)
+Nmap Connect (-sT): window_size = OS value (32768, 64240, 65535)
+```
+
+**Defensive Usage Example**:
+```bash
+# Detection of rapid multiple connections (connect scan)
+tcp.flags.syn == 1 and tcp.window_size > 1024 and tcp.analysis.initial_rtt < 0.1
+```
 
 ---
 
 ### 3️⃣ TCP FIN Scan Detection (`3-tcp_fin.txt`)
-**Objective**: Detect `nmap -sF` FIN scanning.
+```bash
+# Nmap Command: sudo nmap -sF <target>
+```
 
 **Wireshark Filter**:
 ```
 tcp.flags == 0x01
 ```
 
-**Scan Type**: Stealth scan using FIN packets  
-**Detection Method**: TCP packets with only FIN flag set  
-**Security Context**: Firewall evasion technique
+**Technical Concept**:
+FIN scanning exploits a TCP RFC 793 subtlety: a FIN packet to a closed port should generate an RST, while an open port should ignore the packet. This technique bypasses certain stateless firewalls.
+
+**Detection Method**:
+- **tcp.flags == 0x01**: Only the FIN flag is enabled (0x01 in hexadecimal)
+- Abnormal TCP packets (FIN without prior connection)
+- Absence of established TCP session
+
+**Security Interest**:
+- **Firewall bypass**: Stateless firewalls often block SYN but not FIN
+- **Stealth**: Less detected by basic IDS systems
+- **Port enumeration**: Identification of open ports without SYN
+
+**Expected Responses**:
+```
+Closed port : RST/ACK (detectable)
+Open port   : No response (silence = open)
+Firewall    : Packet dropped (undetectable)
+```
+
+**Defensive Usage Example**:
+```bash
+# Detection of isolated FIN packets (without session context)
+tcp.flags.fin == 1 and tcp.flags.syn == 0 and tcp.flags.ack == 0
+```
 
 ---
 
 ### 4️⃣ TCP Ping Sweep Detection (`4-tcp_ping_sweep.txt`)
-**Objective**: Detect `nmap -sn -PS/-PA` TCP ping sweeps.
+```bash
+# Nmap Commands: sudo nmap -sn -PS <subnet> / sudo nmap -sn -PA <subnet>
+```
 
 **Wireshark Filter**:
 ```
 tcp.syn== 1 and tcp.ack== 1
 ```
 
-**Scan Type**: Host discovery using TCP  
-**Detection Method**: SYN+ACK responses from live hosts  
-**Security Context**: Network reconnaissance and host enumeration
+**Technical Concept**:
+TCP ping sweep uses TCP SYN (-PS) or ACK (-PA) packets to discover live hosts. The filter detects SYN+ACK responses that indicate active hosts with open ports.
+
+**Detection Method**:
+- **tcp.syn == 1 and tcp.ack == 1**: SYN+ACK responses from target hosts
+- Host discovery pattern on a subnet
+- Multiple SYN+ACK from different IPs within short timeframe
+
+**Security Interest**:
+- **Host discovery**: Network mapping without port scanning
+- **ICMP bypass**: Alternative when ICMP is blocked
+- **Attack preparation**: Reconnaissance phase preceding exploitation
+
+**TCP Ping Types**:
+```bash
+-PS (SYN Ping)  : Sends SYN, expects SYN+ACK (open port) or RST (closed port)
+-PA (ACK Ping)  : Sends ACK, expects RST (live host - no session)
+```
+
+**Defensive Usage Example**:
+```bash
+# Sweep detection through statistical analysis
+tcp.flags.syn == 1 and tcp.flags.ack == 1 | statistics over time intervals
+```
 
 ---
 
 ### 5️⃣ UDP Port Scan Detection (`5-udp_port_scan.txt`)
-**Objective**: Detect `nmap -sU` UDP port scanning.
+```bash
+# Nmap Command: sudo nmap -sU <target>
+```
 
 **Wireshark Filter**:
 ```
 icmp.type == 3 and icmp.code == 3
 ```
 
-**Scan Type**: UDP port enumeration  
-**Detection Method**: ICMP "Port Unreachable" responses  
-**Security Context**: UDP service discovery attempts
+**Technical Concept**:
+UDP scanning exploits the ICMP error notification mechanism. When a UDP packet is sent to a closed port, the target system responds with an ICMP "Destination Unreachable - Port Unreachable" message (Type 3, Code 3).
+
+**Detection Method**:
+- **icmp.type == 3**: ICMP Destination Unreachable
+- **icmp.code == 3**: Specific "Port Unreachable" code
+- ICMP messages in response to UDP probes
+
+**Security Interest**:
+- **UDP enumeration**: Discovery of UDP services (DNS, DHCP, SNMP)
+- **Critical services**: Identification of infrastructure services
+- **UDP attacks**: Preparation for amplification attacks
+
+**UDP Port States**:
+```
+Closed port  : ICMP Port Unreachable (detectable)
+Open port    : Service response OR silence (difficult to distinguish)
+Filtered port: No ICMP response (firewall/filtering)
+```
+
+**Defensive Usage Example**:
+```bash
+# UDP scan detection through ICMP analysis
+icmp.type == 3 and icmp.code == 3 | grouping by source IP
+```
 
 ---
 
 ### 6️⃣ UDP Ping Sweep Detection (`6-udp_ping_sweep.txt`)
-**Objective**: Detect `nmap -sn -PU` UDP ping sweeps.
+```bash
+# Nmap Command: sudo nmap -sn -PU <subnet>
+```
 
 **Wireshark Filter**:
 ```
 udp and udp.dstport == 7
 ```
 
-**Scan Type**: Host discovery using UDP  
-**Detection Method**: UDP packets to port 7 (Echo service)  
-**Security Context**: Alternative host discovery method
+**Technical Concept**:
+UDP ping sweep sends UDP packets to specific ports (often port 7 - Echo) to discover active hosts. This technique is useful when ICMP and TCP are blocked by firewalls.
+
+**Detection Method**:
+- **udp.dstport == 7**: UDP traffic to Echo port (echo service)
+- UDP host discovery packets
+- Scanning pattern across a subnet
+
+**Security Interest**:
+- **Filtering bypass**: Alternative when ICMP/TCP are blocked
+- **Stealth discovery**: Less suspicious than classic ICMP pings
+- **UDP services**: May reveal active UDP services
+
+**Common UDP Ports for Ping**:
+```
+Port 7   : Echo (echo service)
+Port 9   : Discard (discard service)
+Port 13  : Daytime (date/time service)
+Port 37  : Time (time service)
+```
+
+**Defensive Usage Example**:
+```bash
+# Monitoring UDP ping sweep attempts
+udp.dstport in {7,9,13,37} | analysis by IP ranges
+```
 
 ---
 
 ### 7️⃣ ICMP Ping Sweep Detection (`7-icmp_ping_sweep.txt`)
-**Objective**: Detect `nmap -sn -PE` ICMP ping sweeps.
+```bash
+# Nmap Command: sudo nmap -sn -PE <subnet>
+```
 
 **Wireshark Filter**:
 ```
 icmp.type == 8 or icmp.type == 0
 ```
 
-**Scan Type**: Classic ping sweep  
-**Detection Method**: ICMP Echo Request/Reply pairs  
-**Security Context**: Traditional network discovery technique
+**Technical Concept**:
+ICMP ping sweep is the classic method for host discovery. It sends Echo Requests (Type 8) to a range of IPs and analyzes Echo Replies (Type 0) to identify active hosts.
+
+**Detection Method**:
+- **icmp.type == 8**: ICMP Echo Request (outbound ping)
+- **icmp.type == 0**: ICMP Echo Reply (responses from active hosts)
+- Sequence of pings across a subnet
+
+**Security Interest**:
+- **Network discovery**: Fast and efficient mapping
+- **Network baseline**: Establishing network reference state
+- **Initial reconnaissance**: First step before port scanning
+
+**ICMP Ping Types**:
+```bash
+-PE : Echo Request/Reply (Type 8/0) - Classic ping
+-PP : Timestamp Request/Reply (Type 13/14) - Alternative
+-PM : Address Mask Request/Reply (Type 17/18) - Less common
+```
+
+**Defensive Usage Example**:
+```bash
+# Ping sweep detection through temporal analysis
+icmp.type == 8 | grouping by source IP, sequential analysis
+```
 
 ---
 
 ### 8️⃣ ARP Scanning Detection (`8-arp_scanning.txt`)
-**Objective**: Detect `arp-scan` layer 2 discovery.
+```bash
+# Nmap/arp-scan Command: sudo arp-scan -l / sudo nmap -sn -PR <subnet>
+```
 
 **Wireshark Filter**:
 ```
 arp.dst.hw_mac == 00:00:00:00:00:00
 ```
 
-**Scan Type**: Layer 2 host discovery  
-**Detection Method**: ARP requests with null destination MAC  
-**Security Context**: Local network reconnaissance
+**Technical Concept**:
+ARP scanning operates at layer 2 (data link) to discover hosts on the local network segment. It sends ARP requests with null destination MAC address (broadcast) to discover all machines on the local subnet.
+
+**Detection Method**:
+- **arp.dst.hw_mac == 00:00:00:00:00:00**: Null destination MAC address
+- ARP requests in discovery mode (broadcast)
+- Abnormal volume of ARP traffic
+
+**Security Interest**:
+- **Layer 2 discovery**: Host detection even with IP firewall
+- **Local network**: Complete enumeration of LAN segment
+- **Absolute bypass**: Impossible to block at IP level
+
+**ARP Scan Operation**:
+```
+ARP Request : "Who has IP X.X.X.X?" (MAC destination = 00:00:00:00:00:00)
+ARP Reply   : "IP X.X.X.X is at MAC yy:yy:yy:yy:yy:yy"
+Result      : IP → MAC mapping of all active hosts
+```
+
+**Defensive Usage Example**:
+```bash
+# Monitoring intensive ARP scans
+arp.dst.hw_mac == 00:00:00:00:00:00 | frequency analysis by source IP
+```
 
 ## 📚 Filter Reference Summary
 
@@ -276,41 +483,108 @@ Protocol Scan     : Various ICMP types generated during testing
 tshark -i eth0 -f "tcp[tcpflags] & tcp-syn != 0 and tcp[4:2] <= 1024"
 ```
 
-## 🏆 Project Results
+## 🚨 Signature Analysis & Advanced Detection
 
-### ✅ **Task Completion**
-| Task | Filter File | Scan Detection | Status |
-|------|-------------|----------------|--------|
-| **0** | `0-ip_scan.txt` | IP Protocol Scan | ✅ |
-| **1** | `1-tcp_syn.txt` | TCP SYN Scan | ✅ |
-| **2** | `2-tcp_connect_scan.txt` | TCP Connect Scan | ✅ |
-| **3** | `3-tcp_fin.txt` | TCP FIN Scan | ✅ |
-| **4** | `4-tcp_ping_sweep.txt` | TCP Ping Sweep | ✅ |
-| **5** | `5-udp_port_scan.txt` | UDP Port Scan | ✅ |
-| **6** | `6-udp_ping_sweep.txt` | UDP Ping Sweep | ✅ |
-| **7** | `7-icmp_ping_sweep.txt` | ICMP Ping Sweep | ✅ |
-| **8** | `8-arp_scanning.txt` | ARP Scanning | ✅ |
+### 🔍 **TCP Flag Analysis for Scan Identification**
+```bash
+# Common TCP signatures in Nmap scans
+SYN Scan (nmap -sS)     : tcp.flags == 0x02 (SYN only)
+Connect Scan (nmap -sT) : tcp.flags == 0x02 (SYN with OS window size)
+FIN Scan (nmap -sF)     : tcp.flags == 0x01 (FIN only)
+NULL Scan (nmap -sN)    : tcp.flags == 0x00 (no flags)
+XMAS Scan (nmap -sX)    : tcp.flags == 0x29 (FIN+PSH+URG)
+ACK Scan (nmap -sA)     : tcp.flags == 0x10 (ACK only)
+```
 
-### 📚 **Knowledge Gained**
-- Network scanning technique identification
-- Wireshark filter syntax mastery
-- Protocol-level traffic analysis
-- Defensive monitoring capabilities
+### 📊 **Window Size Signatures for Nmap Fingerprinting**
+```bash
+# TCP window size differentiation
+Nmap SYN Scan (-sS)     : window_size = 1024 (signature)
+Windows 10 native      : window_size = 64240
+Linux native           : window_size = 32768, 65535
+macOS native           : window_size = 65535
+```
 
-## 📚 Prerequisites
+### 🔎 **ICMP Pattern Recognition for UDP Scanning**
+```bash
+# ICMP types revealing scans
+Type 3, Code 3 : Port Unreachable (UDP scan)
+Type 3, Code 2 : Protocol Unreachable (protocol scan)
+Type 3, Code 1 : Host Unreachable (filtered network)
+Type 3, Code 0 : Network Unreachable (missing route)
+```
 
-- **Operating System**: Linux environment with network analysis tools
-- **Network Knowledge**: TCP/IP protocol understanding, OSI model concepts
-- **Security Concepts**: Network scanning techniques and defensive principles
-- **Tool Familiarity**: Command-line interface and Wireshark basics
+### 📈 **Temporal Correlation Techniques**
+```bash
+# Detection based on temporal patterns
+Burst SYN       : >10 SYN/second to different ports
+Sequential Scan : Consecutive ports scanned rapidly
+Random Scan     : Random ports but high volume
+Slow Scan       : Intentional delays between packets (< 1 packet/second)
+```
 
-## 🔗 Additional Resources
+## 📚 Prerequisites & Environment Setup
 
-- [Wireshark Display Filters Reference](https://www.wireshark.org/docs/man-pages/wireshark-filter.html)
-- [Nmap Network Scanning Guide](https://nmap.org/book/)
-- [ICMP RFC 792](https://tools.ietf.org/html/rfc792) - ICMPv4 specification
-- [ICMPv6 RFC 4443](https://tools.ietf.org/html/rfc4443) - ICMPv6 specification
-- [TCP/IP Protocol Suite](https://www.rfc-editor.org/rfc/rfc793.html) - TCP specification
+### 🖥️ **System Requirements**
+- **Operating System**: Linux environment (Ubuntu, Kali Linux recommended)
+- **Privileges**: Administrator access for packet capture
+- **Network Interface**: Active network interface for monitoring
+
+### 🧠 **Knowledge Prerequisites**
+- **TCP/IP Stack**: Deep understanding of network protocols (OSI layers 2-4)
+- **Network Security**: Basic concepts of network attacks and defenses
+- **Command Line**: Linux terminal and bash scripting proficiency
+- **Packet Analysis**: Familiarity with network traffic analysis
+
+### 🛠️ **Required Tools Installation**
+```bash
+# Installation on Ubuntu/Debian
+sudo apt update
+sudo apt install wireshark nmap arp-scan tshark
+
+# Wireshark permissions for non-root user
+sudo usermod -a -G wireshark $USER
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap
+
+# Installation on Kali Linux (usually pre-installed)
+sudo apt update && sudo apt upgrade
+```
+
+### 🔧 **Tool Configuration**
+```bash
+# Wireshark configuration for privileged capture
+echo 'wireshark-common wireshark-common/install-setuid boolean true' | sudo debconf-set-selections
+sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure wireshark-common
+
+# Configuration test
+wireshark --version
+nmap --version
+arp-scan --version
+```
+
+## 🔗 Advanced Resources & References
+
+### 📖 **Official Documentation**
+- [Wireshark Display Filters Reference](https://www.wireshark.org/docs/man-pages/wireshark-filter.html) - Complete filter syntax
+- [Nmap Network Scanning Guide](https://nmap.org/book/) - Complete network scanning guide
+- [Wireshark User's Guide](https://www.wireshark.org/docs/wsug_html_chunked/) - Complete user documentation
+
+### 📋 **Protocol Specifications (RFC)**
+- [RFC 793 - TCP](https://www.rfc-editor.org/rfc/rfc793.html) - Transmission Control Protocol
+- [RFC 792 - ICMP](https://tools.ietf.org/html/rfc792) - Internet Control Message Protocol
+- [RFC 768 - UDP](https://www.rfc-editor.org/rfc/rfc768.html) - User Datagram Protocol
+- [RFC 826 - ARP](https://www.rfc-editor.org/rfc/rfc826.html) - Address Resolution Protocol
+
+### 🛡️ **Security & Defense Resources**
+- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework) - Security standards
+- [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/) - Security testing methodology
+- [SANS Internet Storm Center](https://isc.sans.edu/) - Threat intelligence
+- [Snort IDS Rules](https://www.snort.org/rules) - Intrusion detection rules
+
+### 🎓 **Advanced Learning Resources**
+- [Wireshark Network Analysis](https://www.wiresharkbook.com/) - Specialized network analysis book
+- [Network Security Monitoring](https://nostarch.com/nsm) - Network monitoring book
+- [Practical Packet Analysis](https://nostarch.com/packet2.htm) - Practical packet analysis
 
 ## 👥 Author
 
