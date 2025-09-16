@@ -9,7 +9,8 @@ i=0
 while [ $i -lt ${#decoded_input} ]
 do
 	char="${decoded_input:$i:1}"
-	xor_result=$(( $(printf "%d" "'$char") ^ 95 ))
+	ascii_val=$(printf "%d" "'$char")
+	xor_result=$(( ascii_val ^ 95 ))
 	output+=$(printf "\\$(printf '%03o' $xor_result)")
 	i=$((i + 1))
 done
