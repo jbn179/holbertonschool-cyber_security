@@ -13,3 +13,4 @@ web_application_security/0x04_content_discovery/gobuster.md
 .gitignore
 web_application_security/0x04_content_discovery/content_discovery_docs_quiz.md
 web_application_security/0x04_content_discovery/content_discovery_guide.md
+web_application_security/0x04_content_discovery/tftp_wordlist.txt
