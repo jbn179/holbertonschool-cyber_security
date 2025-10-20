@@ -176,7 +176,7 @@ Ce sont des opérations mathématiques faciles à calculer dans un sens mais ext
 
 ---
 
-## 4. Les Types de Cryptographie
+## 4. Les Types de Cryptographie 
 
 Les algorithmes cryptographiques sont généralement classés en trois catégories principales.
 
