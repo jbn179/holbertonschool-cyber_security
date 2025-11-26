@@ -55,3 +55,11 @@ aihllo.md
 .gitignore
 web_application_security/0x07_file_inclusion/ressources.md
 web_application_security/0x09_command_injection/ressources.md
+linux_security/0x04_buffer_overflow/__pycache__/read_write_heap.cpython-312.pyc
+linux_security/0x04_buffer_overflow/WALKTHROUGH.md
+linux_security/0x04_buffer_overflow/ressources.md
+linux_security/0x04_buffer_overflow/read_write_heap_simple.py
+linux_security/0x04_buffer_overflow/read_write_heap_minimal.py
+linux_security/0x04_buffer_overflow/read_write_heap_commented.py
+linux_security/0x04_buffer_overflow/read_write_heap_clean.py
+PLD_file_inclusion_command_injection.md
