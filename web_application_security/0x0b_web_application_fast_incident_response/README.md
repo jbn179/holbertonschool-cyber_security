@@ -348,7 +348,7 @@ awk -F'"' '{print $2}' logs.txt | awk '{print $2}' | sort | uniq -c | sort -nr |
 
 **Fonctionnalité :**
 - Identifier l'IP avec le plus de requêtes (l'attaquant)
-- Compter le nombre total de requêtes faites par cette IP
+- Afficher directement le nombre de requêtes de cette IP
 
 **Résultat attendu :**
 ```bash
@@ -359,13 +359,18 @@ $ ./2-count_attack.sh
 **Script :**
 ```bash
 #!/bin/bash
-grep -c "^$(awk '{print $1}' logs.txt | sort | uniq -c | sort -nr | head -n 1 | awk '{print $2}')" logs.txt
+awk '{print $1}' logs.txt | sort | uniq -c | sort -nr | head -n 1 | awk '{print $1}'
 ```
 
 **Explication technique :**
-1. `$(...)` : Sous-commande qui identifie l'IP de l'attaquant (même logique que tâche 0)
-2. `grep -c "^$ATTACKER_IP"` : Compte les lignes commençant par cette IP
-3. `-c` : Option de grep pour compter au lieu d'afficher
+1. `awk '{print $1}'` : Extrait la première colonne (IP)
+2. `sort` : Trie les IPs
+3. `uniq -c` : Compte les occurrences uniques (format: "COUNT IP")
+4. `sort -nr` : Trie numériquement en ordre décroissant
+5. `head -n 1` : Prend la première ligne (IP avec le plus de requêtes)
+6. `awk '{print $1}'` : Affiche la première colonne (le comptage)
+
+**Note :** Cette approche est plus efficace car elle utilise directement le comptage de `uniq -c` au lieu de recompter avec `grep -c`
 
 ---
 
