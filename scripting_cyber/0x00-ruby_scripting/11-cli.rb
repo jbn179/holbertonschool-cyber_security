@@ -34,8 +34,10 @@ if options[:add]
   puts "Task '#{options[:add]}' added."
 elsif options[:list]
   if File.exist?(TASKS_FILE) && !File.zero?(TASKS_FILE)
+    count = 1
     File.foreach(TASKS_FILE) do |line|
-      print line
+      puts "#{count}. #{line.strip}"
+      count += 1
     end
   end
 elsif options[:remove]
@@ -53,7 +55,4 @@ elsif options[:remove]
       puts "Invalid task index."
     end
   end
-else
-  puts "Usage: cli.rb [options]"
-  puts "Try './11-cli.rb -h' for more information."
 end
