@@ -15,7 +15,8 @@ def post_request(url, body_params)
   response = http.request(request)
 
   puts "Response status: #{response.code} #{response.message}"
-  puts "\nResponse body:"
+
+  puts "Response body:"
 
   begin
     json_data = JSON.parse(response.body)
