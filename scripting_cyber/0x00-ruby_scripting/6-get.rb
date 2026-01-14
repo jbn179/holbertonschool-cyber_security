@@ -12,9 +12,8 @@ def get_request(url)
   response = http.get(uri.request_uri)
 
   puts "Response status: #{response.code} #{response.message}"
-  puts ""
+
   puts "Response body:"
-  puts ""
 
   begin
     json_data = JSON.parse(response.body)
