@@ -15,13 +15,6 @@ def post_request(url, body_params)
   response = http.request(request)
 
   puts "Response status: #{response.code} #{response.message}"
-
   puts "Response body:"
-
-  begin
-    json_data = JSON.parse(response.body)
-    puts JSON.pretty_generate(json_data)
-  rescue JSON::ParserError
-    puts response.body
-  end
+  puts JSON.pretty_generate(JSON.parse(response.body))
 end
