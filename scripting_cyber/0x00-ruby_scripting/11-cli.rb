@@ -53,4 +53,7 @@ elsif options[:remove]
       puts "Invalid task index."
     end
   end
+else
+  puts "Usage: cli.rb [options]"
+  puts "Try './11-cli.rb -h' for more information."
 end
