@@ -33,7 +33,7 @@ if options[:add]
   end
   puts "Task '#{options[:add]}' added."
 elsif options[:list]
-  if File.exist?(TASKS_FILE)
+  if File.exist?(TASKS_FILE) && !File.zero?(TASKS_FILE)
     File.foreach(TASKS_FILE) do |line|
       print line
     end
