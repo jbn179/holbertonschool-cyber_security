@@ -36,7 +36,7 @@ elsif options[:list]
   if File.exist?(TASKS_FILE) && !File.zero?(TASKS_FILE)
     count = 1
     File.foreach(TASKS_FILE) do |line|
-      puts "#{count}. #{line.strip}"
+      puts "    #{count}. #{line.strip}"
       count += 1
     end
   end
