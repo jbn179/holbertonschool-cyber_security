@@ -66,3 +66,14 @@ blogs/Nessus/nessus_medium_article.txt
 blogs/Nessus/nessus_report.md
 blogs/Nessus/rapport_nessus.md
 active_directory
+privilege_escalation_security_win/windows_privsec/extract_sam.ps1
+privilege_escalation_security_win/windows_privsec/find_flag.ps1
+privilege_escalation_security_win/windows_privsec/find_tools.ps1
+privilege_escalation_security_win/windows_privsec/hijack_service.ps1
+privilege_escalation_security_win/windows_privsec/malicious.c
+privilege_escalation_security_win/windows_privsec/SAM-2025-01-15
+privilege_escalation_security_win/windows_privsec/SECURITY-2025-02-11
+privilege_escalation_security_win/windows_privsec/SprintCSPDLL.dll
+privilege_escalation_security_win/windows_privsec/SprintCSPDLL.dll:Zone.Identifier
+privilege_escalation_security_win/windows_privsec/SYSTEM-2025-02-11
+privilege_escalation_security_win/windows_privsec/transcript_hunt.ps1
