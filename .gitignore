@@ -77,3 +77,4 @@ privilege_escalation_security_win/windows_privsec/SprintCSPDLL.dll
 privilege_escalation_security_win/windows_privsec/SprintCSPDLL.dll:Zone.Identifier
 privilege_escalation_security_win/windows_privsec/SYSTEM-2025-02-11
 privilege_escalation_security_win/windows_privsec/transcript_hunt.ps1
+persistence_in_windows/0x00_acces_persistence_techniques/ressources.md
